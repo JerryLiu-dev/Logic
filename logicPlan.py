@@ -53,7 +53,7 @@ def sentence1() -> Expr:
     A = Expr('A')
     B = Expr('B')
     C = Expr('C')
-    return conjoin([(A|B),(~A % (~B | C)), (~A | ~B | C)])
+    return conjoin([(A|B),(~A % (~B | C)), disjoin([~A,~B,C])])
     "*** END YOUR CODE HERE ***"
 
 
@@ -66,7 +66,11 @@ def sentence2() -> Expr:
     (not D) implies C
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    A = Expr('A')
+    B = Expr('B')
+    C = Expr('C')
+    D = Expr('D')
+    return conjoin([(C % (B|D)),(A >> (~B & ~D)),(~(B & ~C)>>A),(~D >> C)])
     "*** END YOUR CODE HERE ***"
 
 
