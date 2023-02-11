@@ -87,10 +87,10 @@ def sentence3() -> Expr:
     Pacman is born at time 0.
     """
     "*** BEGIN YOUR CODE HERE ***"
-    PacmanAlive_1 = PropSymbolExpr('PacmanAlive_1')
-    PacmanAlive_0 =  PropSymbolExpr('PacmanAlive_0')
-    PacmanBorn_0 = PropSymbolExpr('PacmanBorn_0')
-    PacmanKilled_0 = PropSymbolExpr('PacmanKilled_0')
+    PacmanAlive_1 = PropSymbolExpr('PacmanAlive', time = 1)
+    PacmanAlive_0 =  PropSymbolExpr('PacmanAlive', time = 0) 
+    PacmanBorn_0 = PropSymbolExpr('PacmanBorn', time = 0)
+    PacmanKilled_0 = PropSymbolExpr('PacmanKilled', time = 0)
     return conjoin([(PacmanAlive_1 % ((PacmanAlive_0 & ~PacmanKilled_0) | (~PacmanAlive_0 & PacmanBorn_0))),~(PacmanAlive_0 & PacmanBorn_0),(PacmanBorn_0)])
     "*** END YOUR CODE HERE ***"
 
