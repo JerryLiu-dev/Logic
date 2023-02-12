@@ -384,7 +384,7 @@ def positionLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
