@@ -216,7 +216,8 @@ def pacmanSuccessorAxiomSingle(x: int, y: int, time: int, walls_grid: List[List[
         return None
     
     "*** BEGIN YOUR CODE HERE ***"
-    possible_causes_sent: Expr = conjoin([~PropSymbolExpr(pacman_str, x, y, time=last) , ~PropSymbolExpr(wall_str, x, y), disjoin(possible_causes)])
+    possible_causes_sent: Expr = disjoin(possible_causes)
+    # possible_causes_sent: Expr = conjoin([~PropSymbolExpr(pacman_str, x, y, time=last) , ~PropSymbolExpr(wall_str, x, y), disjoin(possible_causes)])
     return PropSymbolExpr(pacman_str, x, y, time=now) % possible_causes_sent
     "*** END YOUR CODE HERE ***"
 
@@ -302,7 +303,7 @@ def pacphysicsAxioms(t: int, all_coords: List[Tuple], non_outer_wall_coords: Lis
         pacphysics_sentences.append(sensor)
 
     
-    if successorAxioms:
+    if successorAxioms and t>0:
         successor = successorAxioms(t, walls_grid, non_outer_wall_coords)
         pacphysics_sentences.append(successor)
     "*** END YOUR CODE HERE ***"
@@ -338,19 +339,24 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    givens = [PropSymbolExpr(pacman_str, x0, y0, time = 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
+    givens = [PropSymbolExpr(pacman_str, x0, y0, time = 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms), pacphysicsAxioms(0, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
     KB.extend(givens)
 
-    KB.append(PropSymbolExpr(pacman_str, x1, y1, time = 1))
-    sent1 = KB
-    # print("sent1:", sent1)
-    model1 = findModel(conjoin(sent1))
-    KB.pop(-1)
+    conclusion1 = PropSymbolExpr(pacman_str, x1, y1, time = 1)
+    # print("entails 1:", entails(conjoin(KB), conclusion1))
+    # KB.append(~PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    # sent1 = KB
+    model1 = findModel(conjoin(KB)& ~conclusion1)
+    # KB.pop(-1)
 
-    KB.append(~PropSymbolExpr(pacman_str, x1, y1, time = 1))
-    sent2 = KB
-    model2 = findModel(conjoin(sent2))
+    conclusion2 = ~PropSymbolExpr(pacman_str, x1, y1, time = 1)
+    # print("entails 2:", entails(conjoin(KB), conclusion2))
+    # KB.append(PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    # sent2 = KB
+    model2 = findModel(conjoin(KB) & ~conclusion2)
     
+    # print("model1:", model1)
+    # print("model2:", model2)
     return model1, model2
     "*** END YOUR CODE HERE ***"
 
