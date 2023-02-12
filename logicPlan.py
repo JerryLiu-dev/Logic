@@ -339,16 +339,24 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    givens = [PropSymbolExpr(pacman_str, x0, y0, time = 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1), ~PropSymbolExpr(pacman_str, x0, y0, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms), pacphysicsAxioms(0, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
+
+    dx, dy = DIR_TO_DXDY_MAP[action0]
+    notToDo = []
+    for dir in DIRECTIONS:
+        if dir != action0:
+            dx, dy = DIR_TO_DXDY_MAP[dir]
+            notToDo.append(~PropSymbolExpr(pacman_str,x0+dx,y0+dy,time=1))
+
+    givens = [PropSymbolExpr(pacman_str, x0, y0, time = 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1),~PropSymbolExpr(pacman_str, x0, y0, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms), pacphysicsAxioms(0, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
     KB.extend(givens)
+    KB.extend(notToDo)
 
     conclusion1 = PropSymbolExpr(pacman_str, x1, y1, time = 1)
     model1 = findModel(conjoin(KB) & conclusion1)
-    print("model1:", model1)
 
     conclusion2 = ~PropSymbolExpr(pacman_str, x1, y1, time = 1)
     model2 = findModel(conjoin(KB) & conclusion2)
-    print("model2:", model2)
+
     return model1, model2
     "*** END YOUR CODE HERE ***"
 
