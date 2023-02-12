@@ -216,7 +216,8 @@ def pacmanSuccessorAxiomSingle(x: int, y: int, time: int, walls_grid: List[List[
         return None
     
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    possible_causes_sent: Expr = conjoin([~PropSymbolExpr(pacman_str, x, y, time=last) , ~PropSymbolExpr(wall_str, x, y), disjoin(possible_causes)])
+    return PropSymbolExpr(pacman_str, x, y, time=now) % possible_causes_sent
     "*** END YOUR CODE HERE ***"
 
 
@@ -287,7 +288,22 @@ def pacphysicsAxioms(t: int, all_coords: List[Tuple], non_outer_wall_coords: Lis
     pacphysics_sentences = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    is_wall = conjoin([walls_grid[coord[0]][coord[1]] >> ~PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in all_coords])
+    pacphysics_sentences.append(is_wall)
+
+    pac_pos_t = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_outer_wall_coords])
+    pacphysics_sentences.append(pac_pos_t)
+
+    pac_act_t = exactlyOne([PropSymbolExpr(dir, time = t) for dir in DIRECTIONS])
+    pacphysics_sentences.append(pac_act_t)
+
+    sensor = sensorModel(t, non_outer_wall_coords)
+    if sensor:
+        pacphysics_sentences.append(sensor)
+
+    successor = successorAxioms(t, walls_grid, non_outer_wall_coords)
+    if successor:
+        pacphysics_sentences.append(successor)
     "*** END YOUR CODE HERE ***"
 
     return conjoin(pacphysics_sentences)
@@ -321,7 +337,17 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    givens = [PropSymbolExpr(pacman_str, x0, y0, 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
+    KB.extend(givens)
+
+    sent1 = KB.append(PropSymbolExpr(pacman_str, x1, y1, 1))
+    model1 = findModel(conjoin(sent1))
+    KB.pop(PropSymbolExpr(pacman_str, x1, y1, 1))
+
+    sent2 = KB.append(~PropSymbolExpr(pacman_str, x1, y1, 1))
+    model2 = findModel(conjoin(sent2))
+    
+    return model1, model2
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
