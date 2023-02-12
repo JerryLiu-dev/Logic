@@ -339,24 +339,16 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    givens = [PropSymbolExpr(pacman_str, x0, y0, time = 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms), pacphysicsAxioms(0, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
+    givens = [PropSymbolExpr(pacman_str, x0, y0, time = 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1), ~PropSymbolExpr(pacman_str, x0, y0, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms), pacphysicsAxioms(0, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
     KB.extend(givens)
 
     conclusion1 = PropSymbolExpr(pacman_str, x1, y1, time = 1)
-    # print("entails 1:", entails(conjoin(KB), conclusion1))
-    # KB.append(~PropSymbolExpr(pacman_str, x1, y1, time = 1))
-    # sent1 = KB
-    model1 = findModel(conjoin(KB)& ~conclusion1)
-    # KB.pop(-1)
+    model1 = findModel(conjoin(KB) & conclusion1)
+    print("model1:", model1)
 
     conclusion2 = ~PropSymbolExpr(pacman_str, x1, y1, time = 1)
-    # print("entails 2:", entails(conjoin(KB), conclusion2))
-    # KB.append(PropSymbolExpr(pacman_str, x1, y1, time = 1))
-    # sent2 = KB
-    model2 = findModel(conjoin(KB) & ~conclusion2)
-    
-    # print("model1:", model1)
-    # print("model2:", model2)
+    model2 = findModel(conjoin(KB) & conclusion2)
+    print("model2:", model2)
     return model1, model2
     "*** END YOUR CODE HERE ***"
 
@@ -384,7 +376,17 @@ def positionLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    
+    initial_loc = PropSymbolExpr(pacman_str, x0, y0, 0)
+    KB.append(initial_loc)
+    for t in range(50):
+        print(t)
+        one_non_wall = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_wall_coords])
+        KB.append(one_non_wall)
+
+        model
+        if findModel(conjoin(KB) & PropSymbolExpr(pacman_str, xg, yg, time = t)):
+            return extractActionSequence()
+
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
