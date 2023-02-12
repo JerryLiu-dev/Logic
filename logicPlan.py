@@ -297,12 +297,13 @@ def pacphysicsAxioms(t: int, all_coords: List[Tuple], non_outer_wall_coords: Lis
     pac_act_t = exactlyOne([PropSymbolExpr(dir, time = t) for dir in DIRECTIONS])
     pacphysics_sentences.append(pac_act_t)
 
-    sensor = sensorModel(t, non_outer_wall_coords)
-    if sensor:
+    if sensorModel:
+        sensor = sensorModel(t, non_outer_wall_coords)
         pacphysics_sentences.append(sensor)
 
-    successor = successorAxioms(t, walls_grid, non_outer_wall_coords)
-    if successor:
+    
+    if successorAxioms:
+        successor = successorAxioms(t, walls_grid, non_outer_wall_coords)
         pacphysics_sentences.append(successor)
     "*** END YOUR CODE HERE ***"
 
@@ -340,11 +341,14 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     givens = [PropSymbolExpr(pacman_str, x0, y0, time = 0), PropSymbolExpr(action0, time = 0), PropSymbolExpr(action1, time = 1), pacphysicsAxioms(1, all_coords, non_outer_wall_coords, allLegalSuccessorAxioms)]
     KB.extend(givens)
 
-    sent1 = KB.append(PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    KB.append(PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    sent1 = KB
+    # print("sent1:", sent1)
     model1 = findModel(conjoin(sent1))
-    KB.pop(PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    KB.pop(-1)
 
-    sent2 = KB.append(~PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    KB.append(~PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    sent2 = KB
     model2 = findModel(conjoin(sent2))
     
     return model1, model2
