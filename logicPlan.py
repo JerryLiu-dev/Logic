@@ -425,6 +425,7 @@ def foodLogicPlan(problem) -> List:
     (x0, y0), food = problem.start
     food = food.asList()
 
+
     # Get lists of possible locations (i.e. without walls) and possible actions
     all_coords = list(itertools.product(range(width + 2), range(height + 2)))
 
@@ -433,9 +434,35 @@ def foodLogicPlan(problem) -> List:
 
     KB = []
 
-    "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    initial_loc = PropSymbolExpr(pacman_str, x0, y0, time=0)
+    KB.append(initial_loc)
+    foodTime = []
+    for f in food:
+        foodTime.append(PropSymbolExpr(food_str,f[0],f[1],time = 0))
+    for t in range(50):
+        print(t)
+        one_non_wall = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_wall_coords])
+        KB.append(one_non_wall)
+        if t>0:
+            successors = [pacmanSuccessorAxiomSingle(coord[0], coord[1], t, walls) for coord in non_wall_coords]
+            KB.extend(successors)
+            temp = []
+            for ct, f in enumerate(food):
+                temp.append(PropSymbolExpr(food_str,f[0],f[1],time = t+1) % conjoin([~PropSymbolExpr(pacman_str,f[0],f[1],time =t), foodTime[ct]]))
+            foodTime = temp
+            KB.extend(foodTime)
+        one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
+        KB.append(one_action)
+        model = findModel(conjoin(KB) & conjoin([~f for f in foodTime]))
+        if model:
+            temp = extractActionSequence(model, actions)
+            if len(temp)>1:
+                return temp
+
+        
+
+        
+    return []
 
 #______________________________________________________________________________
 # QUESTION 6
