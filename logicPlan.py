@@ -390,17 +390,20 @@ def positionLogicPlan(problem) -> List:
         print(t)
         one_non_wall = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_wall_coords])
         KB.append(one_non_wall)
-
-        model = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, xg, yg, time = t))
-        if model:
-            return extractActionSequence(model, actions)
-
-        one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
-        KB.append(one_action)
-
         if t>0:
             successors = [pacmanSuccessorAxiomSingle(coord[0], coord[1], t, walls_grid) for coord in non_wall_coords]
-            KB.extends(successors)
+            KB.extend(successors)
+        one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
+        KB.append(one_action)
+        model = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, xg, yg, time = t))
+        if model:
+            temp = extractActionSequence(model, actions)
+            if len(temp)>1:
+                return temp
+
+        
+
+        
     return []
 
     "*** END YOUR CODE HERE ***"
