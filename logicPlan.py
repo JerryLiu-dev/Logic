@@ -390,17 +390,16 @@ def positionLogicPlan(problem) -> List:
         print(t)
         one_non_wall = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_wall_coords])
         KB.append(one_non_wall)
-
-        model = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, xg, yg, time = t))
-        if model:
-            return extractActionSequence(model, actions)
-
-        one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
-        KB.append(one_action)
-
         if t>0:
             successors = [pacmanSuccessorAxiomSingle(coord[0], coord[1], t, walls_grid) for coord in non_wall_coords]
-            KB.extends(successors)
+            KB.extend(successors)
+        one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
+        KB.append(one_action)
+        model = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, xg, yg, time = t))
+        if model:
+            temp = extractActionSequence(model, actions)
+            if len(temp)>1:
+                return temp
     return []
 
     "*** END YOUR CODE HERE ***"
@@ -431,7 +430,34 @@ def foodLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    initial_loc = PropSymbolExpr(pacman_str, x0, y0, time=0)
+    KB.append(initial_loc)
+    for t in range(50):
+        # same as q4
+        one_non_wall = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_wall_coords])
+        KB.append(one_non_wall)
+
+        if t>0:
+            successors = [pacmanSuccessorAxiomSingle(coord[0], coord[1], t, walls) for coord in non_wall_coords]
+            KB.extend(successors)
+
+        one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
+        KB.append(one_action)
+
+        # adding food successors
+        food_successors = disjoin([~PropSymbolExpr(food_str, f[0], f[1], time = t) % (PropSymbolExpr(pacman_str, f[0], f[1], time = t) & PropSymbolExpr(food_str, f[0], f[1], time = t+1)) for f in food])
+        KB.append(food_successors)
+
+        # goal assertion
+        goal = conjoin([~PropSymbolExpr(food_str, f[0], f[1], time = t) for f in food])
+        model = findModel(conjoin(KB) & goal)
+
+        # checking successful model
+        if model:
+            temp = extractActionSequence(model, actions)
+            if len(temp)>1:
+                return temp
+    return []
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
