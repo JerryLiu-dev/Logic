@@ -488,7 +488,7 @@ def localization(problem, agent) -> Generator:
     for t in range(agent.num_timesteps):
         possible_locations = []
 
-        # adding pacphysics,action, percepts
+        # adding pacphysics,action,percepts
         pacphysics = pacphysicsAxioms(t, all_coords, non_outer_wall_coords, walls_grid, sensorAxioms, allLegalSuccessorAxioms)
         KB.append(pacphysics)
 
@@ -504,10 +504,8 @@ def localization(problem, agent) -> Generator:
 
             if findModel(conjoin(KB) & pac_loc):
                 possible_locations.append((coord[0], coord[1]))
-
-            if entails(conjoin(KB),pac_loc):
-                possible_locations.append((coord[0], coord[1]))
-                KB.append(pac_loc)
+                if entails(conjoin(KB), pac_loc):
+                    KB.append(pac_loc)
             else:
                 not_pac_loc = ~PropSymbolExpr(pacman_str, coord[0], coord[1], time = t)
                 KB.append(not_pac_loc)
