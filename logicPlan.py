@@ -421,6 +421,7 @@ def foodLogicPlan(problem) -> List:
     (x0, y0), food = problem.start
     food = food.asList()
 
+
     # Get lists of possible locations (i.e. without walls) and possible actions
     all_coords = list(itertools.product(range(width + 2), range(height + 2)))
 
@@ -432,8 +433,10 @@ def foodLogicPlan(problem) -> List:
     "*** BEGIN YOUR CODE HERE ***"
     initial_loc = PropSymbolExpr(pacman_str, x0, y0, time=0)
     KB.append(initial_loc)
+
+    # initializing footTime list to include all foods at time = 0
     for t in range(50):
-        # same as q4
+        #  from q4
         one_non_wall = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_wall_coords])
         KB.append(one_non_wall)
 
@@ -444,21 +447,23 @@ def foodLogicPlan(problem) -> List:
         one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
         KB.append(one_action)
 
-        # adding food successors
-        food_successors = disjoin([~PropSymbolExpr(food_str, f[0], f[1], time = t) % (PropSymbolExpr(pacman_str, f[0], f[1], time = t) & PropSymbolExpr(food_str, f[0], f[1], time = t+1)) for f in food])
-        KB.append(food_successors)
+        # food successor axioms
+        food_successors = []
+        for f in food:
+            transition = PropSymbolExpr(food_str,f[0],f[1],time = t+1) % conjoin([~PropSymbolExpr(pacman_str,f[0],f[1],time = t), PropSymbolExpr(food_str, f[0], f[1], time = t)])
+            food_successors.append(transition)
+        KB.extend(food_successors)
 
-        # goal assertion
-        goal = conjoin([~PropSymbolExpr(food_str, f[0], f[1], time = t) for f in food])
-        model = findModel(conjoin(KB) & goal)
+        # goal
+        model = findModel(conjoin(KB) & conjoin([~PropSymbolExpr(food_str, f[0], f[1], time = t) for f in food]))
 
-        # checking successful model
         if model:
             temp = extractActionSequence(model, actions)
             if len(temp)>1:
                 return temp
     return []
     "*** END YOUR CODE HERE ***"
+
 
 #______________________________________________________________________________
 # QUESTION 6
