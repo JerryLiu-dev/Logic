@@ -543,9 +543,42 @@ def mapping(problem, agent) -> Generator:
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # adding initial loc, is wall to KB
+    initial_loc = PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time = 0)
+    KB.append(initial_loc)
+    is_wall_initial = PropSymbolExpr(wall_str, pac_x_0, pac_y_0)
+    KB.append(is_wall_initial)
 
     for t in range(agent.num_timesteps):
+
+        # adding pacphysics,action,percepts
+        pacphysics = pacphysicsAxioms(t, all_coords, non_outer_wall_coords, None, sensorAxioms, allLegalSuccessorAxioms)
+        KB.append(pacphysics)
+
+        action = PropSymbolExpr(agent.actions[t], time = t)
+        KB.append(action)
+
+        percepts = fourBitPerceptRules(t, agent.getPercepts())
+        KB.append(percepts)
+
+        # add provable wall locations
+        for coord in non_outer_wall_coords:
+            wall_loc = PropSymbolExpr(wall_str, coord[0], coord[1])
+
+            if findModel(conjoin(KB) & wall_loc):
+                known_map[coord[0]][coord[1]] = 1
+                if entails(conjoin(KB), wall_loc):
+                    KB.append(wall_loc)
+            else:
+                known_map[coord[0]][coord[1]] = -1
+                if entails(conjoin(KB), ~wall_loc): 
+                    not_wall_loc = ~PropSymbolExpr(wall_str, coord[0], coord[1])
+                    known_map[coord[0]][coord[1]] = 0
+                    KB.append(not_wall_loc)
+
+        agent.moveToNextState(agent.actions[t])
+
         "*** END YOUR CODE HERE ***"
         yield known_map
 
