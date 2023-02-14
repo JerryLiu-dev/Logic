@@ -547,6 +547,7 @@ def mapping(problem, agent) -> Generator:
     # adding initial loc, is wall to KB
     initial_loc = PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time = 0)
     KB.append(initial_loc)
+
     is_wall_initial = ~PropSymbolExpr(wall_str, pac_x_0, pac_y_0)
     KB.append(is_wall_initial)
 
