@@ -438,7 +438,7 @@ def foodLogicPlan(problem) -> List:
     KB.append(initial_loc)
     foodTime = []
     for f in food:
-        foodTime.append(PropSymbolExpr(food_str,f[0],f[1],time = 0))
+        KB.append(PropSymbolExpr(food_str,f[0],f[1],time = 0))
     for t in range(50):
         print(t)
         one_non_wall = exactlyOne([PropSymbolExpr(pacman_str, coord[0], coord[1], time = t) for coord in non_wall_coords])
@@ -446,14 +446,13 @@ def foodLogicPlan(problem) -> List:
         if t>0:
             successors = [pacmanSuccessorAxiomSingle(coord[0], coord[1], t, walls) for coord in non_wall_coords]
             KB.extend(successors)
-            temp = []
-            for ct, f in enumerate(food):
-                temp.append(PropSymbolExpr(food_str,f[0],f[1],time = t+1) % conjoin([~PropSymbolExpr(pacman_str,f[0],f[1],time =t), foodTime[ct]]))
-            foodTime = temp
-            KB.extend(foodTime)
+            for f in food:
+                KB.append(PropSymbolExpr(food_str,f[0],f[1],time=t) % conjoin([~PropSymbolExpr(pacman_str,f[0],f[1],time=t-1), PropSymbolExpr(food_str,f[0],f[1],time=t-1)]))
+            
+    
         one_action = exactlyOne([PropSymbolExpr(action, time = t) for action in actions])
         KB.append(one_action)
-        model = findModel(conjoin(KB) & conjoin([~f for f in foodTime]))
+        model = findModel(conjoin(KB) & conjoin([~PropSymbolExpr(food_str,f[0],f[1],time=t) for f in food]))
         if model:
             temp = extractActionSequence(model, actions)
             if len(temp)>1:
