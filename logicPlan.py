@@ -610,7 +610,7 @@ def slam(problem, agent) -> Generator:
     initial_loc = PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time = 0)
     KB.append(initial_loc)
     known_map[pac_x_0][pac_y_0] = 0
-    initial_not_wall = PropSymbolExpr(wall_str, pac_x_0, pac_y_0)
+    initial_not_wall = ~PropSymbolExpr(wall_str, pac_x_0, pac_y_0)
     KB.append(initial_not_wall)
 
     for t in range(agent.num_timesteps):
@@ -626,8 +626,8 @@ def slam(problem, agent) -> Generator:
         percepts = numAdjWallsPerceptRules(t, agent.getPercepts())
         KB.append(percepts)
 
-        # add provable wall locations
         for coord in non_outer_wall_coords:
+            # add provable wall locations
             wall_loc = PropSymbolExpr(wall_str, coord[0], coord[1])
             not_wall_loc = ~PropSymbolExpr(wall_str, coord[0], coord[1])
 
@@ -638,8 +638,7 @@ def slam(problem, agent) -> Generator:
                 known_map[coord[0]][coord[1]] = 0
                 KB.append(not_wall_loc)
 
-         # possible locations of pacman
-        for coord in non_outer_wall_coords:
+            # possible locations of pacman
             pac_loc = PropSymbolExpr(pacman_str, coord[0], coord[1], time = t)
 
             if findModel(conjoin(KB) & pac_loc):
@@ -649,6 +648,8 @@ def slam(problem, agent) -> Generator:
             else:
                 not_pac_loc = ~PropSymbolExpr(pacman_str, coord[0], coord[1], time = t)
                 KB.append(not_pac_loc)
+
+        agent.moveToNextState(agent.actions[t])
 
         "*** END YOUR CODE HERE ***"
         yield (known_map, possible_locations)
