@@ -606,9 +606,50 @@ def slam(problem, agent) -> Generator:
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # intializing things
+    initial_loc = PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time = 0)
+    KB.append(initial_loc)
+    known_map[pac_x_0][pac_y_0] = 0
+    initial_not_wall = PropSymbolExpr(wall_str, pac_x_0, pac_y_0)
+    KB.append(initial_not_wall)
 
     for t in range(agent.num_timesteps):
+        possible_locations = []
+        
+         # adding pacphysics,action,percepts using SLAM
+        pacphysics = pacphysicsAxioms(t, all_coords, non_outer_wall_coords, known_map, SLAMSensorAxioms, SLAMSuccessorAxioms)
+        KB.append(pacphysics)
+
+        action = PropSymbolExpr(agent.actions[t], time = t)
+        KB.append(action)
+
+        percepts = numAdjWallsPerceptRules(t, agent.getPercepts())
+        KB.append(percepts)
+
+        # add provable wall locations
+        for coord in non_outer_wall_coords:
+            wall_loc = PropSymbolExpr(wall_str, coord[0], coord[1])
+            not_wall_loc = ~PropSymbolExpr(wall_str, coord[0], coord[1])
+
+            if findModel(conjoin(KB) & wall_loc) and entails(conjoin(KB), wall_loc):
+                known_map[coord[0]][coord[1]] = 1
+                KB.append(wall_loc)
+            elif findModel(conjoin(KB) & not_wall_loc) and entails(conjoin(KB), not_wall_loc):
+                known_map[coord[0]][coord[1]] = 0
+                KB.append(not_wall_loc)
+
+         # possible locations of pacman
+        for coord in non_outer_wall_coords:
+            pac_loc = PropSymbolExpr(pacman_str, coord[0], coord[1], time = t)
+
+            if findModel(conjoin(KB) & pac_loc):
+                possible_locations.append((coord[0], coord[1]))
+                if entails(conjoin(KB), pac_loc):
+                    KB.append(pac_loc)
+            else:
+                not_pac_loc = ~PropSymbolExpr(pacman_str, coord[0], coord[1], time = t)
+                KB.append(not_pac_loc)
+
         "*** END YOUR CODE HERE ***"
         yield (known_map, possible_locations)
 
